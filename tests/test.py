@@ -50,7 +50,7 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(calculate("1000000 / 100"), 10000)
 
     def test_divide_resulting_in_fraction(self):
-        self.assertEqual(calculate("7 / 3"), 7 / 3)
+        self.assertEqual(calculate("7 / 3"), 2.3333333333)
 
     def test_divide_by_zero(self):
         with self.assertRaises(ZeroDivisionError):
@@ -81,7 +81,7 @@ class TestCalculator(unittest.TestCase):
             calculate("5 + a")
 
     def test_complex_operation_1(self):
-        self.assertEqual(calculate("3 + 5 * 2 - 8 / 4"), 9)
+        self.assertEqual(calculate("3 + 5 * 2 - 8 / 4"), 11)
 
     def test_complex_operation_2(self):
         self.assertEqual(calculate("10 + 2 * 6 / (4 - 2)"), 16)

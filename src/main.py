@@ -1,4 +1,22 @@
 def calculate(expression: str) -> float:
+    """
+    Evalúa una expresión aritmética con operaciones básicas (suma, resta,
+    multiplicación y división) y paréntesis. Además, maneja operadores unarios
+    (por ejemplo, "-10 / 2") y distingue entre enteros y decimales para retornar
+    el resultado sin decimales innecesarios.
+
+    Parámetros:
+      expression: str - La cadena con la expresión (ejemplo: "2 + 2").
+
+    Retorna:
+      float o int - El resultado de la evaluación. Si el resultado es un número
+      entero, se retorna como int; de lo contrario se retorna como float.
+
+    Lanza:
+      SyntaxError si la sintaxis es incorrecta.
+      ValueError si se encuentra un carácter inválido o la entrada está vacía.
+      ZeroDivisionError si ocurre una división por cero.
+    """
     s = expression.strip()
     if s == "":
         raise ValueError("Entrada vacía")
@@ -10,34 +28,44 @@ def calculate(expression: str) -> float:
         while i < len(s) and s[i].isspace():
             i += 1
 
-    def parse_number() -> float:
+    def parse_number():
         nonlocal i
         skip_whitespace()
         start = i
-        if i < len(s) and not (s[i].isdigit() or s[i] == '.'):
-            raise ValueError(f"Carácter inválido en la posición {i}.")
+        # Recolecta dígitos y el punto decimal
         while i < len(s) and (s[i].isdigit() or s[i] == '.'):
             i += 1
         if start == i:
             raise SyntaxError("Sintaxis inválida: se esperaba un número.")
-        return float(s[start:i])
+        num_str = s[start:i]
+        if '.' in num_str:
+            return float(num_str)
+        else:
+            return int(num_str)
 
-    def parse_factor() -> float:
+    def parse_factor():
         nonlocal i
         skip_whitespace()
+        # Manejo de operador unario + o -
+        if i < len(s) and s[i] in "+-":
+            op = s[i]
+            i += 1
+            factor_val = parse_factor()
+            return factor_val if op == '+' else -factor_val
+        skip_whitespace()
+        # Manejo de paréntesis
         if i < len(s) and s[i] == "(":
-            i += 1  # omite el paréntesis abierto
+            i += 1  # omite '('
             result = parse_expression()
             skip_whitespace()
-            if i < len(s) and s[i] == ")":
-                i += 1  # omite el paréntesis cerrado
-            else:
+            if i >= len(s) or s[i] != ")":
                 raise SyntaxError("Sintaxis inválida: se esperaba ')'.")
+            i += 1  # omite ')'
             return result
         else:
             return parse_number()
 
-    def parse_term() -> float:
+    def parse_term():
         nonlocal i
         result = parse_factor()
         while True:
@@ -54,7 +82,7 @@ def calculate(expression: str) -> float:
                 break
         return result
 
-    def parse_expression() -> float:
+    def parse_expression():
         nonlocal i
         result = parse_term()
         while True:
@@ -75,9 +103,18 @@ def calculate(expression: str) -> float:
     skip_whitespace()
     if i != len(s):
         raise ValueError("Entrada inválida: quedan caracteres sin procesar.")
+
+    # Redondea el resultado y convierte a entero si es numéricamente exacto
+    if isinstance(result, float):
+        rounded_result = round(result, 10)
+        if rounded_result.is_integer():
+            return int(rounded_result)
+        else:
+            return rounded_result
     return result
 
 
+# Modo interactivo (opcional)
 if __name__ == "__main__":
     print("Calculadora en línea de comandos")
     print('Ingrese una operación completa (ejemplo: 2 + 2) y presione Enter para calcular.')
@@ -86,11 +123,11 @@ if __name__ == "__main__":
     
     while True:
         entrada = input("Operación: ").strip()
-        # Si se ingresa "salir", se finaliza la calculadora.
+        # Salir si se ingresa "salir"
         if entrada.lower() == "salir":
             print("Saliendo de la calculadora. ¡Hasta luego!")
             break
-        # Si se ingresa "c", se borra la operación actual y se vuelve a pedir entrada.
+        # Borrar si se ingresa "c"
         if entrada.lower() == "c":
             print("Operación borrada.\n")
             continue
